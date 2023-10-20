@@ -167,6 +167,7 @@ function clearDrawingPoints() {
 }
 
 // Observer for the "drawing-changed" event
+// Fixed
 canvas.addEventListener("drawing-changed", (e: Event) => {
   if (ctx) {
     ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the entire canvas
