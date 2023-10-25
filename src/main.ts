@@ -30,7 +30,7 @@ const ctx = canvas.getContext("2d");
 // Variables to track drawing state
 let isDrawing = false;
 let currentMarkerThickness = 2;
-
+let sticker = "";
 // Array to store the user's drawing points
 //const displayList: [number, number][][] = [];
 //const drawingPoints: [number, number][] = [];
@@ -77,31 +77,80 @@ class ToolPreview {
   }
 
   display(ctx: CanvasRenderingContext2D) {
-    if (this.render) {
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = currentMarkerThickness / 2;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, ctx.lineWidth, 0, 2 * Math.PI);
-      ctx.stroke();
-      ctx.fill();
+    if (!this.render) {
+      return;
     }
+    if (sticker != "") {
+      ctx.fillText(sticker, this.x, this.y);
+      return;
+    }
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = currentMarkerThickness / 2;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, ctx.lineWidth, 0, 2 * Math.PI);
+    ctx.stroke();
+    ctx.fill();
+  }
+}
+
+class Sticker {
+  private x: number;
+  private y: number;
+  private text: string;
+
+  constructor(x: number, y: number, text: string) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+  }
+
+  drag(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    ctx.fillText(this.text, this.x, this.y);
+  }
+}
+
+function setBrush(arg: number | string) {
+  if (typeof arg === "number") {
+    sticker = "";
+    currentMarkerThickness = arg;
+  } else if (typeof arg === "string") {
+    sticker = arg;
+    currentMarkerThickness = 0;
   }
 }
 
 const currentToolPreview: ToolPreview = new ToolPreview(0, 0);
 
 interface DrawingData {
-  displayList: MarkerLine[];
-  redoStack: MarkerLine[];
+  displayList: Input[];
+  redoStack: Input[];
+}
+
+interface Input {
+  drag(x: number, y: number): void;
+  display(ctx: CanvasRenderingContext2D): void;
 }
 
 const drawingData: DrawingData = { displayList: [], redoStack: [] };
+
 // Event listeners for mouse events to draw on the canvas
 canvas.addEventListener("mousedown", (e: MouseEvent) => {
+  isDrawing = true;
+
   if (ctx) {
-    isDrawing = true;
-    const currentLine = new MarkerLine(e.offsetX, e.offsetY);
-    drawingData.displayList.push(currentLine);
+    if (sticker == "") {
+      const currentLine = new MarkerLine(e.offsetX, e.offsetY);
+      drawingData.displayList.push(currentLine);
+    } else {
+      const newSticker = new Sticker(e.offsetX, e.offsetY, sticker);
+      drawingData.displayList.push(newSticker);
+    }
   }
 });
 
@@ -133,16 +182,26 @@ canvas.addEventListener("mouseout", () => {
 });
 
 // Create a container for buttons arranged horizontally
-const horizontalContainer = document.createElement("div");
-horizontalContainer.style.display = "flex";
-horizontalContainer.style.justifyContent = "center"; // Center buttons horizontally
-verticalContainer.append(horizontalContainer);
+const commandButtons = document.createElement("div");
+commandButtons.style.display = "flex";
+commandButtons.style.justifyContent = "center"; // Center buttons horizontally
+verticalContainer.append(commandButtons);
+
+const brushSize = document.createElement("div");
+brushSize.style.display = "flex";
+brushSize.style.justifyContent = "center"; // Center buttons horizontally
+verticalContainer.append(brushSize);
+
+const emojiButtons = document.createElement("div");
+emojiButtons.style.display = "flex";
+emojiButtons.style.justifyContent = "center"; // Center buttons horizontally
+verticalContainer.append(emojiButtons);
 
 // Create and add the "Clear" button
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "Clear";
 clearButton.id = "clearButton";
-horizontalContainer.append(clearButton);
+commandButtons.append(clearButton);
 
 // Clear button functionality
 clearButton.addEventListener("click", () => {
@@ -151,37 +210,73 @@ clearButton.addEventListener("click", () => {
   }
 });
 
+const brush = document.createElement("div");
+brush.textContent = "Brush size:"; // Set the text content
+
+// Style the text element to match the button's size
+brush.style.width = "100px"; // Adjust the width as needed
+brush.style.height = "30px"; // Adjust the height as needed
+brush.style.textAlign = "center";
+brush.style.lineHeight = "40px"; // Adjust the line height to vertically center the text
+brushSize.append(brush);
+
 // Create buttons for "thin" and "thick" markers
 const thinMarkerButton = document.createElement("button");
 thinMarkerButton.innerHTML = "Thin";
 thinMarkerButton.id = "thinMarkerButton";
-horizontalContainer.append(thinMarkerButton);
+brushSize.append(thinMarkerButton);
 
 const thickMarkerButton = document.createElement("button");
 thickMarkerButton.innerHTML = "Thick";
 thickMarkerButton.id = "thickMarkerButton";
-horizontalContainer.append(thickMarkerButton);
+brushSize.append(thickMarkerButton);
 
 // Add event listeners to the marker tool buttons
 thinMarkerButton.addEventListener("click", () => {
-  currentMarkerThickness = 1; // Set to a thin marker (e.g., 1)
+  setBrush(1); // Set to a thin marker (e.g., 1)
 });
 
 thickMarkerButton.addEventListener("click", () => {
-  currentMarkerThickness = 5; // Set to a thick marker (e.g., 5)
+  setBrush(5); // Set to a thick marker (e.g., 5)
 });
 
+const emote1 = document.createElement("button");
+emote1.innerHTML = "😀";
+emote1.id = "emote1";
+emojiButtons.append(emote1);
+
+const emote2 = document.createElement("button");
+emote2.innerHTML = "🎉";
+emote2.id = "emote2";
+emojiButtons.append(emote2);
+
+const emote3 = document.createElement("button");
+emote3.innerHTML = "❤️";
+emote3.id = "emote3";
+emojiButtons.append(emote3);
+
+emote1.addEventListener("click", () => {
+  setBrush("😀"); // Set to a thin marker (e.g., 1)
+});
+
+emote2.addEventListener("click", () => {
+  setBrush("🎉"); // Set to a thin marker (e.g., 1)
+});
+
+emote3.addEventListener("click", () => {
+  setBrush("❤️"); // Set to a thin marker (e.g., 1)
+});
 // Create and add the "Undo" button
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "Undo";
 undoButton.id = "undoButton";
-horizontalContainer.append(undoButton);
+commandButtons.append(undoButton);
 
 // Create and add the "Redo" button
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "Redo";
 redoButton.id = "redoButton";
-horizontalContainer.append(redoButton);
+commandButtons.append(redoButton);
 
 // Undo button functionality
 undoButton.addEventListener("click", () => {
