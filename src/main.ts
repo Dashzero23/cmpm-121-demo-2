@@ -65,6 +65,31 @@ class MarkerLine {
   }
 }
 
+class ToolPreview {
+  x: number;
+  y: number;
+  render: boolean;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+    this.render = true;
+  }
+
+  display(ctx: CanvasRenderingContext2D) {
+    if (this.render) {
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = currentMarkerThickness / 2;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, ctx.lineWidth, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fill();
+    }
+  }
+}
+
+const currentToolPreview: ToolPreview = new ToolPreview(0, 0);
+
 interface DrawingData {
   displayList: MarkerLine[];
   redoStack: MarkerLine[];
@@ -81,12 +106,18 @@ canvas.addEventListener("mousedown", (e: MouseEvent) => {
 });
 
 canvas.addEventListener("mousemove", (e: MouseEvent) => {
-  if (ctx && isDrawing) {
+  if (isDrawing && ctx) {
     const currentPath =
       drawingData.displayList[drawingData.displayList.length - 1];
     currentPath.drag(e.offsetX, e.offsetY);
     redraw();
+    return;
   }
+
+  currentToolPreview.render = true;
+  currentToolPreview.x = e.offsetX;
+  currentToolPreview.y = e.offsetY;
+  redraw();
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -95,7 +126,11 @@ canvas.addEventListener("mouseup", () => {
   }
 });
 
-canvas.addEventListener("mouseout", () => (isDrawing = false));
+canvas.addEventListener("mouseout", () => {
+  isDrawing = false;
+  currentToolPreview.render = false;
+  redraw();
+});
 
 // Create a container for buttons arranged horizontally
 const horizontalContainer = document.createElement("div");
@@ -194,7 +229,6 @@ function clearCanvas() {
   }
 }
 
-// Fixed
 function redraw() {
   if (drawingData?.displayList && ctx) {
     const paths = drawingData.displayList;
@@ -203,5 +237,7 @@ function redraw() {
     for (const path of paths) {
       path.display(ctx);
     }
+
+    currentToolPreview.display(ctx);
   }
 }
