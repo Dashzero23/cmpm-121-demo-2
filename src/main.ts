@@ -29,6 +29,7 @@ const ctx = canvas.getContext("2d");
 
 // Variables to track drawing state
 let isDrawing = false;
+let currentMarkerThickness = 2;
 
 // Array to store the user's drawing points
 //const displayList: [number, number][][] = [];
@@ -37,9 +38,11 @@ let isDrawing = false;
 
 class MarkerLine {
   private points: { x: number; y: number }[] = [];
+  private thickness: number;
 
   constructor(initialX: number, initialY: number) {
     this.points.push({ x: initialX, y: initialY });
+    this.thickness = currentMarkerThickness;
   }
 
   drag(x: number, y: number) {
@@ -50,7 +53,7 @@ class MarkerLine {
     if (this.points.length > 1) {
       ctx.strokeStyle = "black";
       ctx.lineJoin = "round";
-      ctx.lineWidth = 5;
+      ctx.lineWidth = this.thickness;
 
       ctx.beginPath();
       ctx.moveTo(this.points[0].x, this.points[0].y);
@@ -111,6 +114,26 @@ clearButton.addEventListener("click", () => {
   if (ctx) {
     clearCanvas();
   }
+});
+
+// Create buttons for "thin" and "thick" markers
+const thinMarkerButton = document.createElement("button");
+thinMarkerButton.innerHTML = "Thin";
+thinMarkerButton.id = "thinMarkerButton";
+horizontalContainer.append(thinMarkerButton);
+
+const thickMarkerButton = document.createElement("button");
+thickMarkerButton.innerHTML = "Thick";
+thickMarkerButton.id = "thickMarkerButton";
+horizontalContainer.append(thickMarkerButton);
+
+// Add event listeners to the marker tool buttons
+thinMarkerButton.addEventListener("click", () => {
+  currentMarkerThickness = 1; // Set to a thin marker (e.g., 1)
+});
+
+thickMarkerButton.addEventListener("click", () => {
+  currentMarkerThickness = 5; // Set to a thick marker (e.g., 5)
 });
 
 // Create and add the "Undo" button
