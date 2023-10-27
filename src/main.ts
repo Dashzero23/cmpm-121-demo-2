@@ -361,6 +361,41 @@ function redo() {
   }
 }
 
+// Create and add the "Export" button
+const exportButton = document.createElement("button");
+exportButton.innerHTML = "Export";
+exportButton.id = "exportButton";
+document.querySelector(".commandButtons")?.append(exportButton);
+
+// Export button functionality
+exportButton.addEventListener("click", () => {
+  // Create a new canvas with dimensions 1024x1024
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = 1024;
+  exportCanvas.height = 1024;
+
+  // Get the context for the new canvas
+  const exportCtx = exportCanvas.getContext("2d");
+
+  if (exportCtx) {
+    // Apply a scale transformation to fill the larger canvas
+    const scaleFactor = 4;
+    exportCtx.scale(scaleFactor, scaleFactor);
+
+    // Execute all items from the display list on the new canvas
+    drawingData.displayList.forEach((command) => {
+      command.display(exportCtx);
+    });
+
+    // Convert the canvas to a data URL and trigger a download
+    const dataURL = exportCanvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = dataURL;
+    a.download = "exported_canvas.png";
+    a.click();
+  }
+});
+
 // Function to clear the canvas
 function clearCanvas() {
   if (ctx) {
