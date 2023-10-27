@@ -29,12 +29,8 @@ const ctx = canvas.getContext("2d");
 
 // Variables to track drawing state
 let isDrawing = false;
-let currentMarkerThickness = 2;
+let currentMarkerThickness = 3;
 let sticker = "";
-// Array to store the user's drawing points
-//const displayList: [number, number][][] = [];
-//const drawingPoints: [number, number][] = [];
-//const redoStack: [number, number][][] = [];
 
 class MarkerLine {
   private points: { x: number; y: number }[] = [];
@@ -81,6 +77,7 @@ class ToolPreview {
       return;
     }
     if (sticker != "") {
+      ctx.font = "24px serif";
       ctx.fillText(sticker, this.x, this.y);
       return;
     }
@@ -111,6 +108,7 @@ class Sticker {
   }
 
   display(ctx: CanvasRenderingContext2D) {
+    ctx.font = "24px serif";
     ctx.fillText(this.text, this.x, this.y);
   }
 }
@@ -246,6 +244,11 @@ thinMarkerButton.innerHTML = "Thin";
 thinMarkerButton.id = "thinMarkerButton";
 document.querySelector(".brushSize")?.append(thinMarkerButton);
 
+const midMarkerButton = document.createElement("button");
+midMarkerButton.innerHTML = "Middle";
+midMarkerButton.id = "thickMarkerButton";
+document.querySelector(".brushSize")?.append(midMarkerButton);
+
 const thickMarkerButton = document.createElement("button");
 thickMarkerButton.innerHTML = "Thick";
 thickMarkerButton.id = "thickMarkerButton";
@@ -254,6 +257,10 @@ document.querySelector(".brushSize")?.append(thickMarkerButton);
 // Add event listeners to the marker tool buttons
 thinMarkerButton.addEventListener("click", () => {
   setBrush(1); // Set to a thin marker (e.g., 1)
+});
+
+midMarkerButton.addEventListener("click", () => {
+  setBrush(3); // Set to a thin marker (e.g., 1)
 });
 
 thickMarkerButton.addEventListener("click", () => {
