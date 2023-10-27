@@ -181,27 +181,47 @@ canvas.addEventListener("mouseout", () => {
   redraw();
 });
 
-// Create a container for buttons arranged horizontally
-const commandButtons = document.createElement("div");
-commandButtons.style.display = "flex";
-commandButtons.style.justifyContent = "center"; // Center buttons horizontally
-verticalContainer.append(commandButtons);
+interface ButtonGroup {
+  name: string;
+  styles?: Record<string, string>;
+}
 
-const brushSize = document.createElement("div");
-brushSize.style.display = "flex";
-brushSize.style.justifyContent = "center"; // Center buttons horizontally
-verticalContainer.append(brushSize);
+function createButtonGroups(groups: ButtonGroup[]) {
+  groups.forEach((group) => {
+    const container = document.createElement("div");
+    // Set a group-specific class name
+    container.className = group.name;
 
-const emojiButtons = document.createElement("div");
-emojiButtons.style.display = "flex";
-emojiButtons.style.justifyContent = "center"; // Center buttons horizontally
-verticalContainer.append(emojiButtons);
+    // Apply styles to the container if provided
+    if (group.styles) {
+      Object.assign(container.style, group.styles);
+    }
+
+    verticalContainer.append(container);
+  });
+}
+
+// Button group details, including styles
+const buttonGroupDetails = [
+  {
+    name: "commandButtons",
+    styles: { display: "flex", justifyContent: "center" },
+  },
+  { name: "brushSize", styles: { display: "flex", justifyContent: "center" } },
+  {
+    name: "emojiButtons",
+    styles: { display: "flex", justifyContent: "center" },
+  },
+];
+
+// Call the function to create the button groups
+createButtonGroups(buttonGroupDetails);
 
 // Create and add the "Clear" button
 const clearButton = document.createElement("button");
 clearButton.innerHTML = "Clear";
 clearButton.id = "clearButton";
-commandButtons.append(clearButton);
+document.querySelector(".commandButtons")?.append(clearButton);
 
 // Clear button functionality
 clearButton.addEventListener("click", () => {
@@ -210,26 +230,26 @@ clearButton.addEventListener("click", () => {
   }
 });
 
-const brush = document.createElement("div");
-brush.textContent = "Brush size:"; // Set the text content
+const brushText = document.createElement("div");
+brushText.textContent = "Brush size:"; // Set the text content
 
 // Style the text element to match the button's size
-brush.style.width = "100px"; // Adjust the width as needed
-brush.style.height = "30px"; // Adjust the height as needed
-brush.style.textAlign = "center";
-brush.style.lineHeight = "40px"; // Adjust the line height to vertically center the text
-brushSize.append(brush);
+brushText.style.width = "100px"; // Adjust the width as needed
+brushText.style.height = "30px"; // Adjust the height as needed
+brushText.style.textAlign = "center";
+brushText.style.lineHeight = "40px"; // Adjust the line height to vertically center the text
+document.querySelector(".brushSize")?.append(brushText);
 
 // Create buttons for "thin" and "thick" markers
 const thinMarkerButton = document.createElement("button");
 thinMarkerButton.innerHTML = "Thin";
 thinMarkerButton.id = "thinMarkerButton";
-brushSize.append(thinMarkerButton);
+document.querySelector(".brushSize")?.append(thinMarkerButton);
 
 const thickMarkerButton = document.createElement("button");
 thickMarkerButton.innerHTML = "Thick";
 thickMarkerButton.id = "thickMarkerButton";
-brushSize.append(thickMarkerButton);
+document.querySelector(".brushSize")?.append(thickMarkerButton);
 
 // Add event listeners to the marker tool buttons
 thinMarkerButton.addEventListener("click", () => {
@@ -240,43 +260,69 @@ thickMarkerButton.addEventListener("click", () => {
   setBrush(5); // Set to a thick marker (e.g., 5)
 });
 
-const emote1 = document.createElement("button");
-emote1.innerHTML = "😀";
-emote1.id = "emote1";
-emojiButtons.append(emote1);
+const customStickerButton = document.createElement("button");
+customStickerButton.innerHTML = "Create Custom Sticker";
+customStickerButton.id = "customStickerButton";
+document.querySelector(".emojiButtons")?.append(customStickerButton);
 
-const emote2 = document.createElement("button");
-emote2.innerHTML = "🎉";
-emote2.id = "emote2";
-emojiButtons.append(emote2);
+// Function to create buttons for a group
+function createEmoteButtons(buttons: { text: string; id: string }[]) {
+  const groupContainer = document.querySelector(".emojiButtons");
+  if (groupContainer) {
+    buttons.forEach((button) => {
+      const newButton = document.createElement("button");
+      newButton.innerHTML = button.text;
+      newButton.id = button.id;
+      groupContainer.append(newButton);
+      newButton.addEventListener("click", () => {
+        setBrush(button.text);
+      });
+    });
+  }
+}
 
-const emote3 = document.createElement("button");
-emote3.innerHTML = "❤️";
-emote3.id = "emote3";
-emojiButtons.append(emote3);
+// Button details for the emojiButtons group
+const emojiButtons = [
+  { text: "😀", id: "emote1" },
+  { text: "🎉", id: "emote2" },
+  { text: "❤️", id: "emote3" },
+];
 
-emote1.addEventListener("click", () => {
-  setBrush("😀"); // Set to a thin marker (e.g., 1)
+interface NewSticker {
+  text: string;
+  id: string;
+}
+
+// Array to store user-created stickers
+const customStickers: NewSticker[] = [];
+
+// Click event listener for the "Create Custom Sticker" button
+customStickerButton.addEventListener("click", () => {
+  const stickerText = prompt("Enter your custom sticker (e.g., 😊):");
+  if (stickerText) {
+    const newCustomSticker: NewSticker = {
+      text: stickerText,
+      id: `custom${customStickers.length + 1}`,
+    };
+    customStickers.push(newCustomSticker);
+    createEmoteButtons(customStickers);
+  }
 });
 
-emote2.addEventListener("click", () => {
-  setBrush("🎉"); // Set to a thin marker (e.g., 1)
-});
+// Call the function to create emoji buttons
+createEmoteButtons(emojiButtons);
 
-emote3.addEventListener("click", () => {
-  setBrush("❤️"); // Set to a thin marker (e.g., 1)
-});
 // Create and add the "Undo" button
 const undoButton = document.createElement("button");
 undoButton.innerHTML = "Undo";
 undoButton.id = "undoButton";
-commandButtons.append(undoButton);
+document.querySelector(".commandButtons")?.append(undoButton);
 
 // Create and add the "Redo" button
 const redoButton = document.createElement("button");
 redoButton.innerHTML = "Redo";
 redoButton.id = "redoButton";
-commandButtons.append(redoButton);
+document.querySelector(".commandButtons")?.append(redoButton);
 
 // Undo button functionality
 undoButton.addEventListener("click", () => {
