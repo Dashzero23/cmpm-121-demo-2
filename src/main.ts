@@ -31,14 +31,17 @@ const ctx = canvas.getContext("2d");
 let isDrawing = false;
 let currentMarkerThickness = 3;
 let sticker = "";
+let color = "black";
 
 class MarkerLine {
   private points: { x: number; y: number }[] = [];
   private thickness: number;
+  private color: string;
 
-  constructor(initialX: number, initialY: number) {
+  constructor(initialX: number, initialY: number, color: string) {
     this.points.push({ x: initialX, y: initialY });
     this.thickness = currentMarkerThickness;
+    this.color = color;
   }
 
   drag(x: number, y: number) {
@@ -47,7 +50,7 @@ class MarkerLine {
 
   display(ctx: CanvasRenderingContext2D) {
     if (this.points.length > 1) {
-      ctx.strokeStyle = "black";
+      ctx.strokeStyle = this.color;
       ctx.lineJoin = "round";
       ctx.lineWidth = this.thickness;
 
@@ -143,7 +146,7 @@ canvas.addEventListener("mousedown", (e: MouseEvent) => {
 
   if (ctx) {
     if (sticker == "") {
-      const currentLine = new MarkerLine(e.offsetX, e.offsetY);
+      const currentLine = new MarkerLine(e.offsetX, e.offsetY, color);
       drawingData.displayList.push(currentLine);
     } else {
       const newSticker = new Sticker(e.offsetX, e.offsetY, sticker);
@@ -367,6 +370,37 @@ function redo() {
     }
   }
 }
+
+// Define an array of color options
+const markerColors = [
+  "black",
+  "red",
+  "blue",
+  "green",
+  "purple",
+  "yellow",
+  "orange",
+  "lightblue",
+  "white",
+];
+
+// Create and add the "Random Color" button
+const randomColorButton = document.createElement("button");
+randomColorButton.innerHTML = "Random Color";
+randomColorButton.id = "randomColorButton";
+document.querySelector(".commandButtons")?.append(randomColorButton);
+
+// Event listener for the "Random Color" button
+randomColorButton.addEventListener("click", () => {
+  if (ctx) {
+    // Get a random color from the array
+    const randomColor =
+      markerColors[Math.floor(Math.random() * markerColors.length)];
+
+    // Set the strokeStyle to the random color
+    color = randomColor;
+  }
+});
 
 // Create and add the "Export" button
 const exportButton = document.createElement("button");
